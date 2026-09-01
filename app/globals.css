@@ -1,33 +1,36 @@
 @import "tailwindcss";
 
 /*
-  MillionDollar — Brutalism.
-  Strong foreground borders, hard offset shadows, zero radius, bold display type,
-  quiz-blue primary with a gold leaderboard accent. Light theme only.
+  MillionDollar — brand minimal.
+  Light blue-tinted canvas, brand blue accent, gold #1 highlight, soft rounded
+  cards and hairline borders. Friendly modern sans (Plus Jakarta Sans display /
+  Inter body). Light theme only.
 */
 
 :root {
   color-scheme: light;
 
-  --background: #eff6ff;
-  --foreground: #0f172a;
+  --background: #f5f8ff; /* soft blue-tinted canvas */
+  --foreground: #0f172a; /* brand black */
   --card: #ffffff;
   --card-foreground: #0f172a;
-  --primary: #2563eb;
+  --primary: #2563eb; /* brand blue — white text passes AA */
   --primary-foreground: #ffffff;
-  --secondary: #7c3aed;
+  --secondary: #0f172a; /* strong black button */
   --secondary-foreground: #ffffff;
-  --accent: #f59e0b;
+  --accent: #f59e0b; /* brand gold — highlights #1, dark text */
   --accent-foreground: #0f172a;
-  --muted: #f1f5fd;
-  --muted-foreground: #475569;
-  --border: #0f172a;
+  --muted: #eef2fb; /* cool section band */
+  --muted-foreground: #52607a; /* slate gray, AA on canvas/white */
+  --border: #e2e8f0; /* soft hairline */
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --ring: #2563eb;
 
-  --shadow-brutal: 4px 4px 0 0 var(--foreground);
-  --shadow-brutal-lg: 8px 8px 0 0 var(--foreground);
+  --radius: 14px;
+
+  --shadow-soft: 0 1px 3px rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.07);
+  --shadow-soft-lg: 0 10px 34px rgba(15, 23, 42, 0.13);
 }
 
 @theme inline {
@@ -48,10 +51,12 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-ring: var(--ring);
 
-  --font-display: var(--font-russo), system-ui, sans-serif;
-  --font-body: var(--font-chakra), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --radius: 0px;
+  --radius-lg: var(--radius);
+  --radius-xl: 20px;
+  --radius-2xl: 26px;
 }
 
 * {
@@ -66,6 +71,7 @@ body {
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 main {
@@ -74,33 +80,40 @@ main {
 
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display);
-  letter-spacing: 0.01em;
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 .tabular {
   font-variant-numeric: tabular-nums;
 }
 
-/* Faint brutalist grid, used behind the hero. */
+/* Soft brand-blue halo behind the hero — replaces the old brutalist grid. */
 .grid-bg {
-  background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--foreground) 8%, transparent) 1px, transparent 1px);
-  background-size: 40px 40px;
+  background-image: radial-gradient(
+    62% 46% at 50% -4%,
+    color-mix(in srgb, var(--primary) 10%, transparent),
+    transparent 70%
+  );
 }
 
-/* --- Brutalist primitives --- */
+/* --- Soft primitives (class names kept so existing markup keeps working).
+   Wrapped in @layer components so Tailwind utilities (pl-11, py-3.5, bg-accent…)
+   can override these defaults. --- */
 
-.brutal {
-  border: 2px solid var(--foreground);
-  box-shadow: var(--shadow-brutal);
+@layer components {
+  .brutal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .card-brutal {
   background: var(--card);
   color: var(--card-foreground);
-  border: 2px solid var(--foreground);
-  box-shadow: var(--shadow-brutal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .btn {
@@ -110,61 +123,112 @@ h1, h2, h3, h4, .font-display {
   gap: 0.5rem;
   font-family: var(--font-display);
   font-size: 0.95rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding: 0.8rem 1.25rem;
-  border: 2px solid var(--foreground);
-  box-shadow: var(--shadow-brutal);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  padding: 0.72rem 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
   background: var(--card);
   color: var(--card-foreground);
+  box-shadow: var(--shadow-soft);
   cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease,
+    border-color 150ms ease, opacity 150ms ease;
   text-decoration: none;
 }
 .btn:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-brutal-lg);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft-lg);
 }
 .btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 0 var(--foreground);
+  transform: translateY(0);
+  box-shadow: var(--shadow-soft);
 }
 .btn:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 3px;
+  outline: 3px solid color-mix(in srgb, var(--ring) 45%, transparent);
+  outline-offset: 2px;
 }
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
-  box-shadow: var(--shadow-brutal);
+  box-shadow: var(--shadow-soft);
 }
-.btn-primary { background: var(--primary); color: var(--primary-foreground); }
-.btn-accent { background: var(--accent); color: var(--accent-foreground); }
-.btn-secondary { background: var(--secondary); color: var(--secondary-foreground); }
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+.btn-accent {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: transparent;
+}
 
 .input-brutal {
   width: 100%;
   background: var(--card);
   color: var(--card-foreground);
-  border: 2px solid var(--foreground);
-  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.8rem 0.95rem;
   font-family: var(--font-body);
   font-size: 1rem;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 .input-brutal:focus-visible {
-  outline: 3px solid var(--ring);
-  outline-offset: 2px;
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 22%, transparent);
 }
-.input-brutal::placeholder { color: var(--muted-foreground); }
+.input-brutal::placeholder {
+  color: var(--muted-foreground);
+}
+}
+/* end @layer components */
 
 /* Entrance stagger — disabled under reduced motion below. */
 .rise {
-  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.3, 1.2) backwards;
+  animation: rise 0.4s cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
 }
 @keyframes rise {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Soft pulse for the "live" dot. */
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: inherit;
+  animation: pulse-ring 2s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

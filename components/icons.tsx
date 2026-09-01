@@ -69,6 +69,16 @@ export function Dollar(props: IconProps) {
   );
 }
 
+export function Globe(props: IconProps) {
+  return (
+    <svg {...base} aria-hidden="true" {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18" />
+      <path d="M12 3c2.5 2.5 3.8 5.7 3.8 9S14.5 18.5 12 21c-2.5-2.5-3.8-5.7-3.8-9S9.5 5.5 12 3Z" />
+    </svg>
+  );
+}
+
 export function CursorClick(props: IconProps) {
   return (
     <svg {...base} aria-hidden="true" {...props}>

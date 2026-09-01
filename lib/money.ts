@@ -1,16 +1,22 @@
 // Money helpers. All amounts are integer cents to avoid floating-point drift.
 
-/** Minimum payment to get listed at all: $10. */
-export const MIN_ENTRY_CENTS = 1000;
+/** Minimum payment to get listed at all: $0.01 (TESTING — restore to 100 = $1). */
+export const MIN_ENTRY_CENTS = 1;
 
-/** To seize #1 you must pay at least this much MORE than the current king: $1. */
-export const TOP_INCREMENT_CENTS = 100;
+/** To seize #1 you must pay at least this much MORE than the current king: $0.01 (TESTING — restore to 100 = $1). */
+export const TOP_INCREMENT_CENTS = 1;
 
-/** Format integer cents as USD, e.g. 1050 -> "$10.50". */
+/**
+ * Format integer cents as USD. Whole-dollar amounts drop the cents
+ * (1000 -> "$10"), while fractional amounts keep them (1050 -> "$10.50").
+ */
 export function formatUsd(cents: number): string {
+  const whole = cents % 100 === 0;
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: 2,
   }).format(cents / 100);
 }
 

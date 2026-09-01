@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatUsd, parseUsdToCents } from "@/lib/money";
 import { normalizeUrl } from "@/lib/url";
-import { Bolt, Plus } from "./icons";
+import { Bolt, Globe } from "./icons";
 
 type Action = "claim" | "list";
 
@@ -67,22 +67,25 @@ export function BidBar({
   }
 
   return (
-    <div className="card-brutal bg-card p-5 sm:p-7">
+    <div className="card-brutal mx-auto w-full max-w-md p-6 sm:p-7">
       {/* Headline amount + steppers */}
-      <p className="font-display text-xs uppercase tracking-widest text-muted-foreground">
-        Claim #1 for
+      <p className="text-center text-sm font-medium text-muted-foreground">
+        Take over #1 for
       </p>
-      <div className="mt-2 flex items-center gap-3">
+      <div className="mt-3 flex items-center justify-center gap-4">
         <button
           type="button"
           onClick={() => stepAmount(-100)}
-          className="btn h-11 w-11 shrink-0 p-0 text-xl"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-2xl leading-none text-foreground shadow-[var(--shadow-soft)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft-lg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
           aria-label="Decrease amount by $1"
         >
-          –
+          &minus;
         </button>
-        <div className="flex min-w-0 flex-1 items-center justify-center border-2 border-foreground bg-muted px-3 py-2">
-          <span className="font-display text-3xl sm:text-4xl" aria-hidden="true">
+        <div className="flex min-w-0 items-center justify-center">
+          <span
+            className="font-display text-5xl font-extrabold tracking-tight sm:text-6xl"
+            aria-hidden="true"
+          >
             $
           </span>
           <input
@@ -90,38 +93,43 @@ export function BidBar({
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             aria-label="Amount in US dollars to claim #1"
-            className="w-full min-w-0 bg-transparent text-center font-display text-3xl outline-none focus-visible:outline-none sm:text-4xl"
+            size={4}
+            className="w-auto min-w-[2ch] max-w-[7ch] bg-transparent text-center font-display text-5xl font-extrabold tracking-tight outline-none [field-sizing:content] focus-visible:outline-none sm:text-6xl"
           />
         </div>
         <button
           type="button"
           onClick={() => stepAmount(100)}
-          className="btn h-11 w-11 shrink-0 p-0 text-xl"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-2xl leading-none text-foreground shadow-[var(--shadow-soft)] transition hover:-translate-y-px hover:shadow-[var(--shadow-soft-lg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
           aria-label="Increase amount by $1"
         >
           +
         </button>
       </div>
-      <p className="mt-3 text-sm text-muted-foreground">
-        Your amount sets your rank. Pay {formatUsd(requiredTopCents)} or more to
-        take the crown now — pay less and you still land on the board by clicks.
+      <p className="mx-auto mt-3 max-w-xs text-center text-sm text-muted-foreground">
+        Your amount sets your rank. Whole dollars, $1 at a time.{" "}
+        {formatUsd(minEntryCents)} minimum to get listed.
       </p>
 
       {/* URL */}
-      <div className="mt-5">
+      <div className="relative mt-5">
         <label htmlFor="bid-url" className="sr-only">
           Your product URL
         </label>
+        <Globe
+          className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
         <input
           id="bid-url"
           type="text"
           inputMode="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="yourproduct.com"
+          placeholder="Your product URL"
           aria-invalid={!!error}
           aria-describedby={error ? "bid-error" : undefined}
-          className="input-brutal"
+          className="input-brutal pl-11"
           onKeyDown={(e) => {
             if (e.key === "Enter") go("claim");
           }}
@@ -132,49 +140,40 @@ export function BidBar({
         <p
           id="bid-error"
           role="alert"
-          className="mt-2 text-sm font-medium text-destructive"
+          className="mt-2 text-center text-sm font-medium text-destructive"
         >
           {error}
         </p>
       ) : null}
 
       {/* Actions */}
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <button
-          type="button"
-          onClick={() => go("claim")}
-          disabled={busy !== null}
-          className="btn btn-accent text-base"
-        >
-          {busy === "claim" ? (
-            "Redirecting…"
-          ) : (
-            <>
-              <Bolt className="h-5 w-5" />
-              Claim #1 · {formatUsd(claimCents)}
-            </>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => go("list")}
-          disabled={busy !== null}
-          className="btn btn-primary text-base"
-        >
-          {busy === "list" ? (
-            "Redirecting…"
-          ) : (
-            <>
-              <Plus className="h-5 w-5" />
-              Get listed · {formatUsd(minEntryCents)}
-            </>
-          )}
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => go("claim")}
+        disabled={busy !== null}
+        className="btn btn-primary mt-4 w-full py-3.5 text-base"
+      >
+        {busy === "claim" ? (
+          "Redirecting…"
+        ) : (
+          <>
+            <Bolt className="h-5 w-5" />
+            Take over #1 · {formatUsd(claimCents)}
+          </>
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => go("list")}
+        disabled={busy !== null}
+        className="btn mt-3 w-full py-3.5 text-base"
+      >
+        {busy === "list" ? "Redirecting…" : `Climb · ${formatUsd(minEntryCents)}`}
+      </button>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        You&apos;ll pay securely on Polar. Already listed? Enter the same URL and
-        raise your bid to climb back up.
+        Secure checkout on Polar. Already listed? Enter the same URL and raise
+        your bid to climb.
       </p>
     </div>
   );

@@ -1,26 +1,34 @@
-import Link from "next/link";
-
 export function SiteFooter() {
   return (
-    <footer className="border-t-2 border-foreground bg-muted">
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="font-display uppercase tracking-wide">
-          MILLIONDOLLAR
-          <span className="ml-2 font-body font-normal normal-case text-muted-foreground">
-            pay your way to #1
-          </span>
+    <footer className="border-t border-border">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-8 text-sm sm:flex-row sm:justify-between sm:px-6">
+        <p className="text-muted-foreground">
+          <span className="font-display font-semibold text-foreground">
+            MillionDollar
+          </span>{" "}
+          — pay your way to #1
         </p>
-        <div className="flex items-center gap-4 text-muted-foreground">
-          <Link href="/#bid" className="underline-offset-4 hover:underline">
-            Join
-          </Link>
-          <span
-            className="border border-foreground px-2 py-0.5 font-display text-xs uppercase tracking-wide"
-            title="Payments run through Polar's sandbox — no real charges."
+        <p className="text-muted-foreground">
+          Built by{" "}
+          <a
+            href="https://x.com/MunemulTalha"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
           >
-            Sandbox mode
-          </span>
-        </div>
+            @MunemulTalha
+          </a>
+          {" · "}
+          Brought to you by{" "}
+          <a
+            href="https://pixheads.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-foreground underline-offset-4 hover:text-primary hover:underline"
+          >
+            pixheads.com
+          </a>
+        </p>
       </div>
     </footer>
   );
