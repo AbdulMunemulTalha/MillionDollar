@@ -12,6 +12,7 @@ type Row = {
   title: string | null;
   description: string | null;
   logo_url: string | null;
+  brand_color: string | null;
   amount_cents: number;
   clicks: number;
   paid_at: string | null;
@@ -19,7 +20,7 @@ type Row = {
 };
 
 const SELECT =
-  "id,name,url,tagline,title,description,logo_url,amount_cents,clicks,paid_at,created_at";
+  "id,name,url,tagline,title,description,logo_url,brand_color,amount_cents,clicks,paid_at,created_at";
 
 function toEntry(r: Row): Entry {
   return {
@@ -30,6 +31,7 @@ function toEntry(r: Row): Entry {
     title: r.title,
     description: r.description,
     logoUrl: r.logo_url,
+    brandColor: r.brand_color,
     amountCents: r.amount_cents,
     clicks: r.clicks,
     paidAt: r.paid_at,
@@ -136,7 +138,7 @@ export async function markEntryPaidFromOrder(input: {
   // Only spend the network round-trip on entries that actually go live.
   const meta = paid
     ? await fetchSiteMetadata(pending.url as string)
-    : { title: null, description: null, logoUrl: null };
+    : { title: null, description: null, logoUrl: null, brandColor: null };
 
   await supabase
     .from("entries")
@@ -149,6 +151,7 @@ export async function markEntryPaidFromOrder(input: {
       title: meta.title,
       description: meta.description,
       logo_url: meta.logoUrl,
+      brand_color: meta.brandColor,
     })
     .eq("id", input.entryId)
     .eq("status", "pending");

@@ -2,7 +2,7 @@ import { formatUsd } from "@/lib/money";
 import { timeAgo } from "@/lib/time";
 import type { Entry } from "@/lib/ranking";
 import { hostnameKey } from "@/lib/url";
-import { Crown, ArrowUpRight, CursorClick } from "./icons";
+import { Crown, ArrowUpRight } from "./icons";
 
 export function EntryRow({
   entry,
@@ -50,7 +50,12 @@ export function EntryRow({
           width={40}
           height={40}
           loading="lazy"
-          className="hidden h-10 w-10 shrink-0 rounded-xl border border-border bg-card object-contain p-1.5 sm:block"
+          style={
+            entry.brandColor ? { backgroundColor: entry.brandColor } : undefined
+          }
+          className={`hidden h-10 w-10 shrink-0 rounded-xl border border-border object-contain p-1.5 sm:block ${
+            entry.brandColor ? "" : "bg-card"
+          }`}
         />
 
         <div className="min-w-0 flex-1">
@@ -60,11 +65,12 @@ export function EntryRow({
           {blurb ? (
             <p className="truncate text-sm text-muted-foreground">{blurb}</p>
           ) : null}
-        </div>
-
-        <div className="hidden shrink-0 items-center gap-1 text-sm text-muted-foreground sm:flex">
-          <CursorClick className="h-4 w-4" />
-          <span className="tabular">{entry.clicks.toLocaleString()}</span>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            <span className="tabular font-semibold text-foreground">
+              {entry.clicks.toLocaleString()}
+            </span>{" "}
+            {entry.clicks === 1 ? "Click" : "Clicks"}
+          </p>
         </div>
 
         <div className="shrink-0 text-right">

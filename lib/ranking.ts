@@ -12,6 +12,8 @@ export type Entry = {
   description: string | null;
   /** Logo/preview image scraped from the site (falls back to a favicon). */
   logoUrl: string | null;
+  /** Dark background for the logo tile when the logo is too pale for white. */
+  brandColor: string | null;
   amountCents: number;
   clicks: number;
   paidAt: string | null;

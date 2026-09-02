@@ -9,9 +9,20 @@ export type SiteMetadata = {
   title: string | null;
   description: string | null;
   logoUrl: string | null;
+  /**
+   * A background color to sit behind the logo, set ONLY when the logo would be
+   * invisible on our white card (it's near-white / very pale). Null means the
+   * logo renders on the default white tile.
+   */
+  brandColor: string | null;
 };
 
-const EMPTY: SiteMetadata = { title: null, description: null, logoUrl: null };
+const EMPTY: SiteMetadata = {
+  title: null,
+  description: null,
+  logoUrl: null,
+  brandColor: null,
+};
 
 /** Cap how long we wait on a stranger's server so a slow site can't hang us. */
 const FETCH_TIMEOUT_MS = 6000;
@@ -56,10 +67,14 @@ export async function fetchSiteMetadata(url: string): Promise<SiteMetadata> {
   const title = extractTitle(html);
   const description = extractDescription(html);
   const logoUrl = extractLogo(html, finalUrl);
+  const brandColor = logoUrl
+    ? await deriveLogoBacking(logoUrl, extractThemeColor(html))
+    : null;
   return {
     title: clean(title, 120),
     description: clean(description, 240),
     logoUrl,
+    brandColor,
   };
 }
 
@@ -114,6 +129,14 @@ function extractLogo(html: string, baseUrl: string): string | null {
     "/favicon.ico";
   // Attribute values are HTML-encoded, so a URL's "&" arrives as "&amp;".
   return resolveUrl(decodeEntities(candidate), baseUrl);
+}
+
+/** The site's own declared brand color, if any (used to back a pale logo). */
+function extractThemeColor(html: string): string | null {
+  return (
+    metaContent(html, "name", "theme-color") ??
+    metaContent(html, "name", "msapplication-TileColor")
+  );
 }
 
 /** Read the `content` of a <meta> whose `attr` equals `value` (either order). */
@@ -197,4 +220,145 @@ function clean(value: string | null, max: number): string | null {
 
 function escapeRegex(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/* ---------- Logo backing ----------
+   A white or very pale logo vanishes on our white card. When we detect one we
+   return a dark color to sit behind it so it stays visible — preferring the
+   site's own declared brand color, falling back to our brand navy. Every step
+   is best-effort: any failure yields null (logo just renders on white). */
+
+/** Our brand navy — a safe dark backing any pale logo reads well on. */
+const FALLBACK_BACKING = "#0f172a";
+/** Logos are small; cap the download so a huge og:image can't blow memory. */
+const LOGO_MAX_BYTES = 3 * 1024 * 1024;
+
+/**
+ * Decide whether a logo needs a colored tile behind it, and if so which color.
+ * Downloads the image and inspects its brightness with sharp; returns null when
+ * the logo already shows on white, or when anything goes wrong.
+ */
+async function deriveLogoBacking(
+  logoUrl: string,
+  themeColor: string | null,
+): Promise<string | null> {
+  const bytes = await fetchBytes(logoUrl, LOGO_MAX_BYTES);
+  if (!bytes) return null;
+
+  let visibleInk: number;
+  try {
+    // sharp ships with Next.js; import it lazily so a missing native binary can
+    // never break the paid-order webhook — we just skip the backing instead.
+    const sharp = (await import("sharp")).default;
+    // Shrink, composite onto white (our card color), and read greyscale pixels,
+    // then measure how much of the tile carries clearly-visible ink. A logo that
+    // leaves the tile essentially white — white or transparent artwork — is
+    // invisible on our card and needs a dark backing behind it.
+    const { data } = await sharp(Buffer.from(bytes))
+      .resize(64, 64, { fit: "inside", withoutEnlargement: true })
+      .flatten({ background: "#ffffff" })
+      .greyscale()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    let ink = 0;
+    for (const v of data) if (v < 210) ink++;
+    visibleInk = data.length ? ink / data.length : 0;
+  } catch {
+    return null;
+  }
+
+  // Enough visible ink → the logo shows fine on white, so leave it be.
+  if (visibleInk >= 0.02) return null;
+
+  // Invisible on white: back it with the site's own declared brand color when
+  // that's dark enough for a pale logo to read against, else our brand navy.
+  const themed = parseColor(themeColor);
+  if (themed && luminance(themed) < 0.5) return toHex(themed);
+  return FALLBACK_BACKING;
+}
+
+/** Fetch up to `max` bytes of a URL as raw bytes, or null on any failure. */
+async function fetchBytes(
+  url: string,
+  max: number,
+): Promise<Uint8Array | null> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        redirect: "follow",
+        signal: controller.signal,
+        headers: {
+          // Browser-like headers: some CDNs serve a challenge page (or nothing)
+          // to unknown agents, and we want the same rendition the browser sees.
+          // AVIF is intentionally left out — our decoder can't read it.
+          "user-agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+          accept: "image/webp,image/png,image/jpeg,image/svg+xml,image/*;q=0.8",
+        },
+      });
+      if (!res.ok || !res.body) return null;
+      const reader = res.body.getReader();
+      const chunks: Uint8Array[] = [];
+      let total = 0;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        total += value.byteLength;
+        if (total >= max) {
+          await reader.cancel();
+          break;
+        }
+      }
+      const out = new Uint8Array(total);
+      let offset = 0;
+      for (const c of chunks) {
+        out.set(c, offset);
+        offset += c.byteLength;
+      }
+      return out;
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch {
+    return null;
+  }
+}
+
+type RGB = { r: number; g: number; b: number };
+
+/** Parse "#rgb", "#rrggbb", or "rgb(r,g,b)" into channels, else null. */
+function parseColor(value: string | null): RGB | null {
+  if (!value) return null;
+  const v = value.trim();
+  const hex = v.replace(/^#/, "");
+  if (/^[0-9a-f]{3}$/i.test(hex)) {
+    return {
+      r: parseInt(hex[0] + hex[0], 16),
+      g: parseInt(hex[1] + hex[1], 16),
+      b: parseInt(hex[2] + hex[2], 16),
+    };
+  }
+  if (/^[0-9a-f]{6}$/i.test(hex)) {
+    return {
+      r: parseInt(hex.slice(0, 2), 16),
+      g: parseInt(hex.slice(2, 4), 16),
+      b: parseInt(hex.slice(4, 6), 16),
+    };
+  }
+  const m = v.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (m) return { r: +m[1], g: +m[2], b: +m[3] };
+  return null;
+}
+
+/** Relative luminance 0..1 (sRGB coefficients), for a "dark enough" test. */
+function luminance({ r, g, b }: RGB): number {
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+}
+
+function toHex({ r, g, b }: RGB): string {
+  const h = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
 }
