@@ -1,10 +1,41 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
 import { getBoardSafe } from "@/lib/board";
 import { getVisitorStats } from "@/lib/datafast";
+import { formatUsd, TOP_INCREMENT_CENTS } from "@/lib/money";
 import { Leaderboard } from "@/components/Leaderboard";
 import { LatestList } from "@/components/LatestList";
 import { BidBar } from "@/components/BidBar";
+import { Dollar, CursorClick, Bolt, Plus } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
+
+function Step({
+  icon,
+  n,
+  title,
+  body,
+}: {
+  icon: ReactNode;
+  n: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <div className="card-brutal flex flex-col gap-3 p-5">
+      <div className="flex items-center justify-between">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-soft)]">
+          {icon}
+        </span>
+        <span className="font-display text-3xl font-bold text-muted-foreground/30">
+          {n}
+        </span>
+      </div>
+      <h3 className="font-display text-lg font-bold">{title}</h3>
+      <p className="text-sm text-muted-foreground">{body}</p>
+    </div>
+  );
+}
 
 function LiveStats({
   live,
@@ -88,19 +119,17 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section id="bid" className="grid-bg">
-        <div className="mx-auto max-w-xl px-4 pb-12 pt-12 text-center sm:pt-16">
+        <div className="mx-auto max-w-4xl px-4 pb-8 pt-5 text-center sm:pt-7">
           <LiveStats
             live={visitors.live}
             total={visitors.total}
             products={ranked.length}
           />
-          <h1 className="mt-6 font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl">
-            Pay your way to <span className="text-primary">#1</span>.
-          </h1>
-          <p className="mx-auto mt-4 max-w-md text-base text-muted-foreground sm:text-lg">
-            No ads, no gatekeepers, no revenue share. Just outbid the
-            competition to reach the top. Will you take the crown when this board
-            goes viral?
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">
+            No ads, no API, just climb and dethrone your competition by clicks.{" "}
+            <span className="font-semibold text-primary">
+              Will you take the #1 crown when this site goes viral?
+            </span>
           </p>
           <div className="mt-8">
             <BidBar
@@ -114,19 +143,70 @@ export default async function HomePage() {
 
       {/* LATEST SUBMISSIONS */}
       {latest.length > 0 ? (
-        <section className="mx-auto max-w-3xl px-4 pt-2 pb-8 sm:px-6">
-          <SectionHeading title="Latest submissions" />
+        <section className="mx-auto max-w-4xl px-4 pt-2 pb-8">
+          <h2 className="mb-3 px-1 font-display text-base font-bold tracking-tight text-muted-foreground sm:text-lg">
+            Latest submissions
+          </h2>
           <LatestList entries={latest} />
         </section>
       ) : null}
 
       {/* THE BOARD */}
-      <section id="board" className="mx-auto max-w-3xl px-4 pb-20 sm:px-6">
+      <section id="board" className="mx-auto max-w-4xl px-4 pb-16">
         <SectionHeading
           title="The board"
           subtitle="#1 is the top payer. Everyone else climbs by clicks."
         />
         <Leaderboard board={board} />
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="border-y border-border bg-muted/50">
+        <div className="mx-auto max-w-4xl px-4 py-14">
+          <SectionHeading title="How it works" />
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Step
+              icon={<Dollar className="h-5 w-5" />}
+              n="01"
+              title="Pay to enter"
+              body={`Put down ${formatUsd(minEntryCents)} to claim your spot and land in Latest submissions.`}
+            />
+            <Step
+              icon={<CursorClick className="h-5 w-5" />}
+              n="02"
+              title="Climb by clicks"
+              body="Everyone below #1 is ranked by visits to their link. Share it, earn clicks, rise up the board."
+            />
+            <Step
+              icon={<Bolt className="h-5 w-5" />}
+              n="03"
+              title="Seize the crown"
+              body={`Don't want to wait? Pay ${formatUsd(TOP_INCREMENT_CENTS)} more than the current #1 to take the top spot instantly.`}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="mx-auto max-w-4xl px-4 py-16">
+        <div className="card-brutal bg-primary p-8 text-center text-primary-foreground sm:p-12">
+          <h2 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+            Ready to make your mark?
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-primary-foreground/90">
+            Your name, your link, your rank. Starting at{" "}
+            {formatUsd(minEntryCents)}.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Link
+              href="/#bid"
+              className="btn bg-card text-base text-card-foreground"
+            >
+              <Plus className="h-5 w-5" />
+              Join the board
+            </Link>
+          </div>
+        </div>
       </section>
     </>
   );

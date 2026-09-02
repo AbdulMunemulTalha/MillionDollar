@@ -17,12 +17,21 @@ export function EntryRow({
   index?: number;
 }) {
   const when = timeAgo(entry.paidAt ?? entry.createdAt);
+  const name = entry.title ?? entry.name;
+  const blurb = entry.description ?? entry.tagline;
+  const logo =
+    entry.logoUrl ??
+    `https://www.google.com/s2/favicons?domain=${hostnameKey(entry.url)}&sz=64`;
 
   return (
     <li className="rise" style={{ animationDelay: `${index * 40}ms` }}>
-      <div
-        className={`card-brutal flex items-center gap-3 p-3 sm:gap-4 sm:p-4 ${
-          isKing ? "bg-accent ring-1 ring-primary/30" : ""
+      <Link
+        href={`/go/${entry.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Visit ${name} (opens in a new tab)`}
+        className={`card-brutal group flex items-center gap-3 p-3 no-underline transition hover:-translate-y-px hover:shadow-[var(--shadow-soft-lg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:gap-4 sm:p-4 ${
+          isKing ? "bg-primary/[0.06] ring-1 ring-primary/25" : ""
         }`}
       >
         <div className="flex w-7 shrink-0 justify-center sm:w-8">
@@ -37,7 +46,7 @@ export function EntryRow({
 
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`https://www.google.com/s2/favicons?domain=${hostnameKey(entry.url)}&sz=64`}
+          src={logo}
           alt=""
           width={40}
           height={40}
@@ -47,12 +56,10 @@ export function EntryRow({
 
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-base font-semibold">
-            {entry.name}
+            {name}
           </p>
-          {entry.tagline ? (
-            <p className="truncate text-sm text-muted-foreground">
-              {entry.tagline}
-            </p>
+          {blurb ? (
+            <p className="truncate text-sm text-muted-foreground">{blurb}</p>
           ) : null}
         </div>
 
@@ -70,16 +77,13 @@ export function EntryRow({
           ) : null}
         </div>
 
-        <Link
-          href={`/go/${entry.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-[var(--shadow-soft)] transition hover:-translate-y-px hover:text-primary hover:shadow-[var(--shadow-soft-lg)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
-          aria-label={`Visit ${entry.name} (opens in a new tab)`}
+        <span
+          aria-hidden="true"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-[var(--shadow-soft)] transition group-hover:text-primary"
         >
           <ArrowUpRight className="h-4 w-4" />
-        </Link>
-      </div>
+        </span>
+      </Link>
     </li>
   );
 }

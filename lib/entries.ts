@@ -1,6 +1,7 @@
 import "server-only";
 import { createServiceClient } from "./supabase";
 import { MIN_ENTRY_CENTS } from "./money";
+import { fetchSiteMetadata } from "./metadata";
 import type { Entry } from "./ranking";
 
 type Row = {
@@ -8,13 +9,17 @@ type Row = {
   name: string;
   url: string;
   tagline: string | null;
+  title: string | null;
+  description: string | null;
+  logo_url: string | null;
   amount_cents: number;
   clicks: number;
   paid_at: string | null;
   created_at: string;
 };
 
-const SELECT = "id,name,url,tagline,amount_cents,clicks,paid_at,created_at";
+const SELECT =
+  "id,name,url,tagline,title,description,logo_url,amount_cents,clicks,paid_at,created_at";
 
 function toEntry(r: Row): Entry {
   return {
@@ -22,6 +27,9 @@ function toEntry(r: Row): Entry {
     name: r.name,
     url: r.url,
     tagline: r.tagline,
+    title: r.title,
+    description: r.description,
+    logoUrl: r.logo_url,
     amountCents: r.amount_cents,
     clicks: r.clicks,
     paidAt: r.paid_at,
@@ -114,6 +122,22 @@ export async function markEntryPaidFromOrder(input: {
 }): Promise<void> {
   const supabase = createServiceClient();
   const paid = input.amountCents >= MIN_ENTRY_CENTS;
+
+  // Read the still-pending row's URL so we can scrape its site. The
+  // status filter keeps this a no-op on repeated (idempotent) deliveries.
+  const { data: pending } = await supabase
+    .from("entries")
+    .select("url")
+    .eq("id", input.entryId)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (!pending) return;
+
+  // Only spend the network round-trip on entries that actually go live.
+  const meta = paid
+    ? await fetchSiteMetadata(pending.url as string)
+    : { title: null, description: null, logoUrl: null };
+
   await supabase
     .from("entries")
     .update({
@@ -122,6 +146,9 @@ export async function markEntryPaidFromOrder(input: {
       polar_order_id: input.orderId,
       polar_customer_id: input.customerId,
       paid_at: paid ? new Date().toISOString() : null,
+      title: meta.title,
+      description: meta.description,
+      logo_url: meta.logoUrl,
     })
     .eq("id", input.entryId)
     .eq("status", "pending");

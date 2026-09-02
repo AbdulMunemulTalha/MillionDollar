@@ -3,8 +3,8 @@ import { Crown } from "./icons";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-border bg-background/80 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-center px-4 py-4 sm:px-6">
+    <header>
+      <div className="mx-auto flex max-w-5xl items-center justify-center px-4 py-3 sm:px-6">
         <Link
           href="/"
           className="group flex items-center gap-2"

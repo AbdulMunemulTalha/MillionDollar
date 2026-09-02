@@ -6,6 +6,12 @@ export type Entry = {
   name: string;
   url: string;
   tagline: string | null;
+  /** Title scraped from the site on payment (falls back to `name`). */
+  title: string | null;
+  /** Short description scraped from the site (falls back to `tagline`). */
+  description: string | null;
+  /** Logo/preview image scraped from the site (falls back to a favicon). */
+  logoUrl: string | null;
   amountCents: number;
   clicks: number;
   paidAt: string | null;

@@ -1,14 +1,13 @@
 // Money helpers. All amounts are integer cents to avoid floating-point drift.
 
 /**
- * Minimum payment to get listed at all: $0.50 (TESTING — restore to 100 = $1).
- * Note: Polar/Stripe enforce a hard 0.50 USD minimum per charge, so this can't
- * go lower for real payments.
+ * Fixed price to get listed / climb onto the board: $6.
+ * Note: Polar/Stripe enforce a hard 0.50 USD minimum per charge.
  */
-export const MIN_ENTRY_CENTS = 50;
+export const MIN_ENTRY_CENTS = 600;
 
-/** To seize #1 you must pay at least this much MORE than the current king: $0.50 (TESTING — restore to 100 = $1). */
-export const TOP_INCREMENT_CENTS = 50;
+/** To take over a rank you must pay at least this much MORE than it: $1. */
+export const TOP_INCREMENT_CENTS = 100;
 
 /**
  * Format integer cents as USD. Whole-dollar amounts drop the cents
