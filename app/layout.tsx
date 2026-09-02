@@ -19,10 +19,28 @@ const inter = Inter({
   display: "swap",
 });
 
+const title = "MillionDollar — pay your way to #1";
+const description =
+  "Get on the board for $6 and climb by clicks — or pay $1 over the current #1 to seize the crown instantly.";
+
 export const metadata: Metadata = {
-  title: "MillionDollar — pay your way to #1",
-  description:
-    "Pay at least $1 to get on the board and climb by clicks — or pay $1 over the current #1 to seize the crown instantly.",
+  metadataBase: new URL("https://millliondollar.com"),
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    url: "https://millliondollar.com",
+    siteName: "MillionDollar",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    creator: "@MunemulTalha",
+  },
 };
 
 export default function RootLayout({

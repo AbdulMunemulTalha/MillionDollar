@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { formatUsd } from "@/lib/money";
 import { timeAgo } from "@/lib/time";
 import type { Entry } from "@/lib/ranking";
@@ -25,7 +24,7 @@ export function EntryRow({
 
   return (
     <li className="rise" style={{ animationDelay: `${index * 40}ms` }}>
-      <Link
+      <a
         href={`/go/${entry.id}`}
         target="_blank"
         rel="noopener noreferrer"
@@ -83,7 +82,7 @@ export function EntryRow({
         >
           <ArrowUpRight className="h-4 w-4" />
         </span>
-      </Link>
+      </a>
     </li>
   );
 }

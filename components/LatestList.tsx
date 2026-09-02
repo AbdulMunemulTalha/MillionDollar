@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Entry } from "@/lib/ranking";
 import { formatUsd } from "@/lib/money";
 import { timeAgo } from "@/lib/time";
@@ -22,7 +21,7 @@ export function LatestList({ entries }: { entries: Entry[] }) {
             className="rise"
             style={{ animationDelay: `${i * 40}ms` }}
           >
-            <Link
+            <a
               href={`/go/${entry.id}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -62,7 +61,7 @@ export function LatestList({ entries }: { entries: Entry[] }) {
                   <span className="text-xs text-muted-foreground">{when}</span>
                 ) : null}
               </div>
-            </Link>
+            </a>
           </li>
         );
       })}
