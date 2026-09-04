@@ -1,4 +1,5 @@
 import { formatUsd } from "@/lib/money";
+import { PAYMENTS_ENABLED } from "@/lib/flags";
 import { timeAgo } from "@/lib/time";
 import type { Entry } from "@/lib/ranking";
 import { hostnameKey } from "@/lib/url";
@@ -73,14 +74,22 @@ export function EntryRow({
           </p>
         </div>
 
-        <div className="shrink-0 text-right">
-          <span className="block font-display text-base font-bold tabular sm:text-lg">
-            {formatUsd(entry.amountCents)}
-          </span>
-          {when ? (
+        {PAYMENTS_ENABLED ? (
+          <div className="shrink-0 text-right">
+            <span className="block font-display text-base font-bold tabular sm:text-lg">
+              {formatUsd(entry.amountCents)}
+            </span>
+            {when ? (
+              <span className="block text-xs text-muted-foreground">
+                {when}
+              </span>
+            ) : null}
+          </div>
+        ) : when ? (
+          <div className="shrink-0 text-right">
             <span className="block text-xs text-muted-foreground">{when}</span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
         <span
           aria-hidden="true"

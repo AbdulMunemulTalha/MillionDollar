@@ -24,3 +24,28 @@ export const submitSchema = z.object({
 });
 
 export type SubmitInput = z.infer<typeof submitSchema>;
+
+/**
+ * Request body for the free submission API (payments disabled). There is no
+ * amount because listing is free and ranking is by clicks. Name and email are
+ * collected in the submission popup. The URL is validated loosely here and
+ * normalized in the route, exactly like above.
+ */
+export const freeSubmitSchema = z.object({
+  url: z
+    .string()
+    .trim()
+    .min(1, "Enter your product URL")
+    .max(2048, "URL is too long"),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Enter your name")
+    .max(80, "Name is too long"),
+  email: z
+    .email("Enter a valid email")
+    .trim()
+    .max(254, "Email is too long"),
+});
+
+export type FreeSubmitInput = z.infer<typeof freeSubmitSchema>;

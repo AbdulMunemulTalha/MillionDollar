@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Board } from "@/lib/ranking";
 import { formatUsd } from "@/lib/money";
+import { PAYMENTS_ENABLED } from "@/lib/flags";
 import { EntryRow } from "./EntryRow";
 import { Plus } from "./icons";
 
@@ -11,8 +12,9 @@ function EmptyBoard({ minEntryCents }: { minEntryCents: number }) {
         The board is empty.
       </p>
       <p className="max-w-sm text-sm text-muted-foreground">
-        No one has claimed a spot yet. Be the first name on the MillionDollar
-        board for as little as {formatUsd(minEntryCents)}.
+        {PAYMENTS_ENABLED
+          ? `No one has claimed a spot yet. Be the first name on the MillionDollar board for as little as ${formatUsd(minEntryCents)}.`
+          : "No one has claimed a spot yet. Be the first name on the MillionDollar board — it's free."}
       </p>
       <Link href="/#bid" className="btn btn-primary">
         <Plus className="h-4 w-4" />

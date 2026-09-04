@@ -2,6 +2,7 @@ import "server-only";
 import { createServiceClient } from "./supabase";
 import { MIN_ENTRY_CENTS } from "./money";
 import { fetchSiteMetadata } from "./metadata";
+import { hostnameKey } from "./url";
 import type { Entry } from "./ranking";
 
 type Row = {
@@ -88,6 +89,61 @@ export async function createPendingEntry(input: {
       email: input.email ?? null,
       amount_cents: input.amountCents,
       status: "pending",
+    })
+    .select("id")
+    .single();
+  if (error || !data) {
+    throw new Error(`Failed to create entry: ${error?.message ?? "unknown"}`);
+  }
+  return { id: data.id as string };
+}
+
+/**
+ * Create a live, free board entry (payments disabled). Unlike the paid flow
+ * there is no pending → paid handshake: the row goes straight to `paid` with a
+ * zero amount so it shows on the board immediately and ranks purely by clicks.
+ *
+ * Idempotent by hostname: re-adding the same product returns the existing row
+ * instead of spawning a duplicate, mirroring the paid flow's dedupe-by-URL.
+ * Site metadata is scraped inline (best-effort; never throws).
+ */
+export async function createFreeEntry(input: {
+  name: string;
+  url: string;
+  submitterName: string;
+  email: string;
+}): Promise<{ id: string }> {
+  const supabase = createServiceClient();
+  const key = hostnameKey(input.url);
+
+  // Pre-filter on the hostname (cheap SQL), then confirm with the same
+  // normalization the board uses, so "example.com" and "www.example.com/x"
+  // collapse to one row.
+  const { data: existing } = await supabase
+    .from("entries")
+    .select("id,url")
+    .neq("status", "failed")
+    .ilike("url", `%${key}%`);
+  const match = (existing as { id: string; url: string }[] | null)?.find(
+    (r) => hostnameKey(r.url) === key,
+  );
+  if (match) return { id: match.id };
+
+  const meta = await fetchSiteMetadata(input.url);
+  const { data, error } = await supabase
+    .from("entries")
+    .insert({
+      name: input.name,
+      url: input.url,
+      submitter_name: input.submitterName,
+      email: input.email,
+      amount_cents: 0,
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      title: meta.title,
+      description: meta.description,
+      logo_url: meta.logoUrl,
+      brand_color: meta.brandColor,
     })
     .select("id")
     .single();

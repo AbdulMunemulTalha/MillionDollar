@@ -1,4 +1,5 @@
 import { MIN_ENTRY_CENTS, TOP_INCREMENT_CENTS } from "./money";
+import { PAYMENTS_ENABLED } from "./flags";
 import { hostnameKey } from "./url";
 
 export type Entry = {
@@ -79,10 +80,23 @@ export type Board = {
 
 export function buildBoard(entries: Entry[]): Board {
   const deduped = dedupeByUrl(entries);
-  const king = deriveKing(deduped);
-  const contenders = deduped
-    .filter((e) => e.id !== king?.id)
-    .sort(byClicksThenEarliest);
+
+  // Free mode: the whole board is ranked by clicks and #1 is simply the
+  // most-clicked entry (earliest paid breaks ties). Paid mode: #1 is the top
+  // payer (deriveKing) and everyone below climbs by clicks — the original flow.
+  let king: Entry | null;
+  let contenders: Entry[];
+  if (PAYMENTS_ENABLED) {
+    king = deriveKing(deduped);
+    contenders = deduped
+      .filter((e) => e.id !== king?.id)
+      .sort(byClicksThenEarliest);
+  } else {
+    const byClicks = [...deduped].sort(byClicksThenEarliest);
+    king = byClicks[0] ?? null;
+    contenders = byClicks.slice(1);
+  }
+
   const ranked = king ? [king, ...contenders] : contenders;
   const latest = [...deduped].sort(byNewestPaid);
   return {

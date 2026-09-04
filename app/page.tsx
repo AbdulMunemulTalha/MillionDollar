@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getBoardSafe } from "@/lib/board";
 import { getVisitorStats } from "@/lib/datafast";
 import { formatUsd, TOP_INCREMENT_CENTS } from "@/lib/money";
+import { PAYMENTS_ENABLED } from "@/lib/flags";
 import { Leaderboard } from "@/components/Leaderboard";
 import { LatestList } from "@/components/LatestList";
 import { BidBar } from "@/components/BidBar";
@@ -155,7 +156,11 @@ export default async function HomePage() {
       <section id="board" className="mx-auto max-w-4xl px-4 pb-16">
         <SectionHeading
           title="The board"
-          subtitle="#1 is the top payer. Everyone else climbs by clicks."
+          subtitle={
+            PAYMENTS_ENABLED
+              ? "#1 is the top payer. Everyone else climbs by clicks."
+              : "Ranked by clicks. The most-clicked product wears the crown."
+          }
         />
         <Leaderboard board={board} />
       </section>
@@ -168,20 +173,32 @@ export default async function HomePage() {
             <Step
               icon={<Dollar className="h-5 w-5" />}
               n="01"
-              title="Pay to enter"
-              body={`Put down ${formatUsd(minEntryCents)} to claim your spot and land in Latest submissions.`}
+              title={PAYMENTS_ENABLED ? "Pay to enter" : "Add your product"}
+              body={
+                PAYMENTS_ENABLED
+                  ? `Put down ${formatUsd(minEntryCents)} to claim your spot and land in Latest submissions.`
+                  : "Drop your link and land on the board free. No payment, no account."
+              }
             />
             <Step
               icon={<CursorClick className="h-5 w-5" />}
               n="02"
               title="Climb by clicks"
-              body="Everyone below #1 is ranked by visits to their link. Share it, earn clicks, rise up the board."
+              body={
+                PAYMENTS_ENABLED
+                  ? "Everyone below #1 is ranked by visits to their link. Share it, earn clicks, rise up the board."
+                  : "Every product is ranked by visits to its link. Share yours, earn clicks, rise up the board."
+              }
             />
             <Step
               icon={<Bolt className="h-5 w-5" />}
               n="03"
-              title="Seize the crown"
-              body={`Don't want to wait? Pay ${formatUsd(TOP_INCREMENT_CENTS)} more than the current #1 to take the top spot instantly.`}
+              title={PAYMENTS_ENABLED ? "Seize the crown" : "Wear the crown"}
+              body={
+                PAYMENTS_ENABLED
+                  ? `Don't want to wait? Pay ${formatUsd(TOP_INCREMENT_CENTS)} more than the current #1 to take the top spot instantly.`
+                  : "The most-clicked product takes #1 and wears the crown. Keep the clicks coming to hold the top spot."
+              }
             />
           </div>
         </div>
@@ -194,8 +211,9 @@ export default async function HomePage() {
             Ready to make your mark?
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-primary-foreground/90">
-            Your name, your link, your rank. Starting at{" "}
-            {formatUsd(minEntryCents)}.
+            {PAYMENTS_ENABLED
+              ? `Your name, your link, your rank. Starting at ${formatUsd(minEntryCents)}.`
+              : "Your name, your link, your rank. Free to join."}
           </p>
           <div className="mt-6 flex justify-center">
             <Link
